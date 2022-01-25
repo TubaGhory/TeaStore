@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tea Store</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+
+    <!-- BOOTSTRAP -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+<!-- FOR ICONS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<!-- FONTS -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abel&family=Lobster&family=Neonderthaw&display=swap" rel="stylesheet"> 
+<link href="https://fonts.googleapis.com/css2?family=Abel&display=swap" rel="stylesheet">
+
+
+<!-- FIREBASE -->
+<script  src="https://www.gstatic.com/firebasejs/7.18.0/firebase-app.js"></script>
+<script  src="https://www.gstatic.com/firebasejs/7.18.0/firebase-database.js"></script>
+
+<script>
+  
+    const firebaseConfig = {
+        apiKey: "AIzaSyD3fDzJX4NshexJUnZa9Ps8-gB9RTnZOeE",
+        authDomain: "dhaba-3e186.firebaseapp.com",
+        databaseURL: "https://dhaba-3e186-default-rtdb.firebaseio.com",
+        projectId: "dhaba-3e186",
+        storageBucket: "dhaba-3e186.appspot.com",
+        messagingSenderId: "669691977855",
+        appId: "1:669691977855:web:9f41e4bea853e31dcb1f4a",
+        measurementId: "G-FMJD458GQN"
+
+    };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+
+//var date_today=new Date;
+//sun=0
+//mon=1
+//const d = new Date("Jan 23, 2022 01:15:00")
+//var date_store=date_today.getDate()+'-'+date_today.getMonth()+1+'-'+date_today.getFullYear();    
+var daily_s={}
+var items={}
+var vals=[];
+var i_check=0
+var i_check1=0
+
+var date_today=new Date();
+var month=Number(date_today.getMonth()+1)
+var year=Number(date_today.getFullYear())
+//var day=Number(date_today.getDate())
+
+var day=Number(date_today.getDate())
+var path='Receipts/'+year+'/'+month+'/'+day+'/';
+//console.log(path)
+
+
+
+//Daily Sales
+function read(){
+    //Daily_Sales
+    firebase.database().ref('Items').once('value',function (allItemRecords) {
+    // console.log(Object.keys(allItemRecords.val()).length)
+    allItemRecords.forEach(function (item) { 
+      items[item.val().Item_Name]=0;
+    })
+  })
+
+      firebase.database().ref(path).once('value',function(each_rcpt){
+          each_rcpt.forEach(function (itm){
+            
+          itm.forEach(function (i){
+          i_check1+=1;
+          a=Object.keys(itm.val()).length
+          items[Object.keys(i.val())[0]]=items[Object.keys(i.val())[0]]+Number(Object.values(i.val())[0]) 
+                    
+
+          //console.log('_________',i.key,Object.keys(itm.val())[Object.keys(itm.val()).length-1],itm.key,Object.keys(each_rcpt.val())[Object.keys(each_rcpt.val()).length-1])
+
+    document.getElementById('dailySales').innerHTML='<canvas id="myChart"></canvas>'
+    var ctx = document.getElementById('dailySales').getContext('2d');
+    var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels:Object.keys(items),
+        datasets: [{
+            label: 'Total Sales Amount in Rs.',
+            data: Object.values(items),
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.6)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+      indexAxis:'y',
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+    
+});
+if(i.key!=Object.keys(itm.val())[Object.keys(itm.val()).length-1] || itm.key!=Object.keys(each_rcpt.val())[Object.keys(each_rcpt.val()).length-1])
+{//if(i_check1<(Object.keys(each_rcpt.val()).length*Object.keys(itm.val()).length)+3){
+  //console.log(Object.keys(each_rcpt.val()).length,Object.keys(itm.val()).length)
+  myChart.destroy()
+}
+            })            
+          })  
+      })
+}
+
+
+
+
+
+
+
+
+function week_sales(){
+
+  var today=new Date()
+  var week_num=Number(today.getDay())//2=>tuesday
+  var date_num=Number(today.getDate())//25=>date
+  var start_date=date_num-week_num;//23=>date
+  var end_date=start_date+6;//29=>date
+  var week_sales_dict={}
+  var week_path='Receipts/'+year+'/'+month+'/'
+   var days=[]
+  var chk=0
+
+  for(var i=start_date;i<=end_date;i+=1){
+    week_sales_dict[i]=0;
+  }
+  //console.log(week_sales)
+
+  firebase.database().ref(week_path).once('value',function (day){
+    chk=0
+    days=Object.keys(day.val())
+    day.forEach(function(recpt){
+      recpt.forEach(function(orders){
+        orders.forEach(function(item){
+          
+          //console.log(Object.keys(recpt.val())[Object.keys(recpt.val()).length-1])//array_keys
+          //console.log(orders.key)
+
+          week_sales_dict[days[chk]]+=Number(Object.values(item.val()))
+
+          //GRAPH  
+
+    document.getElementById('weeklySales').innerHTML='<canvas id="myChartWeek"></canvas>'
+    var ctx_m = document.getElementById('weeklySales').getContext('2d');
+    var myChartWeek = new Chart(ctx_m, {
+    type: 'bar',
+    data: {
+        labels:Object.keys(week_sales_dict).map(function(e) {return e+'-'+month+'-'+year}),
+        datasets: [{
+            label: 'Total Sales Amount in Rs.',
+            data:Object.values(week_sales_dict) ,
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.6)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+      indexAxis:'y',
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+    
+});
+if(orders.key!=Object.keys(recpt.val())[Object.keys(recpt.val()).length-1] || days[chk]!=days[days.length-1]){
+  // console.log(days[chk],days[days.length-1])
+  // console.log(orders.key,Object.keys(recpt.val())[Object.keys(recpt.val()).length-1])
+  myChartWeek.destroy()
+}
+ 
+
+
+
+
+          // console.log(Object.values(item.val()))//each_item_price
+          // console.log(days[chk])//each_day
+          // console.log(week_sales_dict)
+        })
+        
+        //console.log(r.val())
+        //console.log(Object.keys(this_date.val()))//returning_date
+     // console.log(Object.values(d.val()))//returning_date
+      //console.log(Object.keys(d.val()))//returning_date
+      })
+      chk+=1
+    })
+
+  })  
+
+}
+//week_sales()
+
+</script>
+
+
+</head>
+<body onload="read();week_sales()">
+  <!-- read(); -->
+    <!-- HEAD -->
+<nav class="navbar navbar-light bg-light" style="background-color:#120c45!important;">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#" style="font-size: 30px;font-family: 'Lobster', cursive;color: orange;padding-bottom:1%;padding-left: 40%;padding-top: 1%;">
+        <i class="fa fa-coffee" style='font-style: italic;color: orange;margin-right: 5%;display: inline;' aria-hidden="true"></i>
+      Tea Store
+    </a>
+  </div>
+</nav>  
+  
+     <!-- NAV BAR -->
+
+
+     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #120c45;opacity:0.9;position: sticky; top:0;">
+      <div class="container-fluid" style="background-color: #120c45;">          
+        <button class="navbar-toggler"  style="background-color: white;"type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown" style="background-color: #120c45;">
+          <ul class="navbar-nav" style="background-color: #120c45;">
+            <li class="nav-item" style="padding-right:2%;">
+              <a class="nav-link dashboard_text active" style="background-color: #120c45;color: white;margin-right:5%;" aria-current="page" href="home.html"><i class="fa fa-home" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Home</a>
+            </li>
+            <li class="nav-item" style="padding-right:2%;">
+              <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:5%;" href="sales.html"><i class="fa fa-line-chart" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Sales</a>
+            </li>
+            <li class="nav-item" style="padding-right:2%;">
+              <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:5%;" href="view_items.html"><i class="fa fa-shopping-cart" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Items</a>
+            </li>
+            
+            <li class="nav-item" style="padding-right:2%;">
+              <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:5%;" href="generate_receipt.html"><i class="fa fa-print" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Invoices</a>
+            </li>
+            <li class="nav-item" style="padding-right:2%;">
+              <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:5%;" href="users.html"><i class="fa fa-user" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Users</a>
+            </li>
+            <li class="nav-item" style="padding-right:2%;">
+              <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:9%;" href="help.html"><i class="fa fa-question" style='color: white !important;;margin-right: 5%;display: inline;' aria-hidden="true"></i>Help</a>
+            </li>
+            
+              </ul>
+            </li>
+          </ul>
+          <a class="ul-a-class2" style='text-decoration: none;margin-left: 15%;margin-right: 1%;display: inline;color: white;' href="#"><i class="fa fa-youtube" style='margin-right: 1%;margin-left:3%;display: inline;color: white;' aria-hidden="true"></i></a>
+          <a class="ul-a-class2" style='text-decoration: none;margin-right: 1%;display: inline;color: white;' href="#"><i class="fa fa-linkedin" style='margin-right: 1%;display: inline;color: white;' aria-hidden="true"></i></a>
+          <a class="ul-a-class2" style='text-decoration: none;margin-right: 1%;display: inline;color: white;' href="#"><i class="fa fa-google-plus" style='margin-right: 1%;display: inline;color: white;' aria-hidden="true"></i></a>
+          <a class="ul-a-class2" style='text-decoration: none;margin-right: 1%;display: inline;color: white;' href="#"><i class="fa fa-instagram" style='margin-right: 1%;display: inline;color: white;' aria-hidden="true"></i></a>
+          <a class="ul-a-class2" style='text-decoration: none;margin-right: 9%;display: inline;color: white;' href="#"><i class="fa fa-twitter" style='margin-right: 1%;display: inline;color: white;' aria-hidden="true"></i></a>
+      
+        </div>
+      </div>
+    </nav>
+
+
+
+
+    <!-- =================CHARTS==================== -->
+
+      <!-- Chart.JS Script -->
+      <script src="js/chart.js"></script>
+
+      <!-- check for aria-label and role -->
+
+      <!-- Daily Sales -->    
+      <h3 class="sales_subheading">Daily Sales</h3>  
+      <canvas id="dailySales" width="20" height="10" class="dailySale" aria-label="chart" role="img"></canvas>
+      <!-- <script src="js/dailySales.js"></script>        
+       -->
+      <!-- Weekly Sales -->
+      <h3 class="sales_subheading">Weekly Sales</h3>  
+      <canvas id="weeklySales" width="20" height="10" class="weeklySale" aria-label="chart" role="img"></canvas>
+      <!-- <script src="js/weekySales.js"></script> -->
+
+
+      
+
+
+
+<!-- FOR NAVVBAR -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+<script src="app.js"></script>
+
+
+</body>
+</html>
+
+

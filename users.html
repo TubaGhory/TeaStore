@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tea Store</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+
+    <!-- BOOTSTRAP -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+<!-- FOR ICONS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+<!-- FONTS -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abel&family=Lobster&family=Neonderthaw&display=swap" rel="stylesheet"> 
+
+
+<!-- FIREBASE -->
+<script  src="https://www.gstatic.com/firebasejs/7.18.0/firebase-app.js"></script>
+<script  src="https://www.gstatic.com/firebasejs/7.18.0/firebase-database.js"></script>
+
+<script>
+  
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3fDzJX4NshexJUnZa9Ps8-gB9RTnZOeE",
+        authDomain: "dhaba-3e186.firebaseapp.com",
+        databaseURL: "https://dhaba-3e186-default-rtdb.firebaseio.com",
+        projectId: "dhaba-3e186",
+        storageBucket: "dhaba-3e186.appspot.com",
+        messagingSenderId: "669691977855",
+        appId: "1:669691977855:web:9f41e4bea853e31dcb1f4a",
+        measurementId: "G-FMJD458GQN"
+    };
+  
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+
+    //FILLING ITEMS TABLE
+
+function getAllUsers() {
+  firebase.database().ref('Users/User').on('value',function (allUsers) {
+    allUsers.forEach(function (user) {
+      let userId=user.key;
+      let Username=user.val().Username;
+      let Password=user.val().Password;
+      AddItemsToTable(userId,Username,Password);
+    });    
+  })  
+}
+getAllUsers()
+
+function AddItemsToTable(userId,Username,Password) {
+  var tbody=document.getElementById('all_users');
+  var trow=document.createElement('tr');
+  var td1=document.createElement('td');
+  var td2=document.createElement('td');
+  var td3=document.createElement('td');
+
+  td1.innerHTML=userId;
+  td2.innerHTML=Username;
+  td3.innerHTML=Password;
+  
+  td1.setAttribute('class','table_elements')
+  td2.setAttribute('class','table_elements')
+  td3.setAttribute('class','table_elements')
+  
+
+
+  //del button
+  var delBtn=document.createElement('button');
+  var delText=document.createTextNode('Delete');
+  delBtn.setAttribute('class','del')  
+  delBtn.setAttribute('onclick',"del_user(this)");
+  delBtn.appendChild(delText);
+    
+  trow.appendChild(td1);
+  trow.appendChild(td2);
+  trow.appendChild(td3);
+  trow.appendChild(delBtn);
+  tbody.appendChild(trow);
+}
+   
+
+function del_user(e){
+    firebase.database().ref('Users/User').once('value',function (allUsers) {
+    allUsers.forEach(function(user){
+      if(e.parentNode.childNodes[1].innerHTML==user.val().Username && e.parentNode.childNodes[2].innerHTML==user.val().Password){
+        var tbody=document.getElementById('all_users');
+        tbody.innerHTML="";
+        firebase.database().ref('Users/User').child(user.key).remove();
+    }
+    })    
+  })
+}
+
+
+
+function add_user() {
+  var id=document.getElementById('user_id');
+  var Username=document.getElementById('user_name');
+  var Password=document.getElementById('user_password');
+  if(Username.value!='' && Password.value!='' && id.value!=''){
+    var tbody=document.getElementById('all_users');
+    tbody.innerHTML="";
+    var user={
+      Username:Username.value,
+      Password:Password.value,
+    }
+    firebase.database().ref('Users/User/'+id.value).set(user);
+    Username.value='';
+    id.value='';
+    Password.value='';
+  }  
+}
+
+
+function check_admin() {
+    if(document.getElementById('inp_name').value!='' && document.getElementById('inp_pwd').value!=''){
+      
+      //For Admin
+      firebase.database().ref('Users/Admin').on('value',function (users) {
+        if(users.val().Password==document.getElementById('inp_pwd').value && users.val().Username==document.getElementById('inp_name').value)
+        {
+            alert('Logged In As Admin');
+            document.getElementById('div1').style.display='block';
+            document.getElementById('div2').style.display='block';
+            document.getElementById('div0').style.display='none';
+            document.getElementById('inp_name').value='';
+            document.getElementById('inp_pwd').value=''
+        }          
+        });      
+
+          }
+    }
+  </script>
+
+
+</head>
+<body>
+    
+    <!-- HEAD -->
+<nav class="navbar navbar-light bg-light" style="background-color:#120c45!important;">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#" style="font-size: 30px;font-family: 'Lobster', cursive;color: orange;padding-bottom:1%;padding-left: 40%;padding-top: 1%;">
+        <i class="fa fa-coffee" style='font-style: italic;color: orange;margin-right: 5%;display: inline;' aria-hidden="true"></i>
+      Tea Store
+    </a>
+  </div>
+</nav>  
+  
+      <!-- NAV BAR -->
+
+
+      <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #120c45;opacity:0.9;position: sticky; top:0;">
+        <div class="container-fluid" style="background-color: #120c45;">          
+          <button class="navbar-toggler"  style="background-color: white;"type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNavDropdown" style="background-color: #120c45;">
+            <ul class="navbar-nav" style="background-color: #120c45;">
+              <li class="nav-item" style="padding-right:2%;">
+                <a class="nav-link dashboard_text active" style="background-color: #120c45;color: white;margin-right:5%;" aria-current="page" href="home.html"><i class="fa fa-home" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Home</a>
+              </li>
+              <li class="nav-item" style="padding-right:2%;">
+                <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:5%;" href="sales.html"><i class="fa fa-line-chart" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Sales</a>
+              </li>
+              <li class="nav-item" style="padding-right:2%;">
+                <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:5%;" href="view_items.html"><i class="fa fa-shopping-cart" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Items</a>
+              </li>
+              
+              <li class="nav-item" style="padding-right:2%;">
+                <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:5%;" href="generate_receipt.html"><i class="fa fa-print" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Invoices</a>
+              </li>
+              <li class="nav-item" style="padding-right:2%;">
+                <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:5%;" href="users.html"><i class="fa fa-user" style='color: white;margin-right: 5%;display: inline;' aria-hidden="true"></i>Users</a>
+              </li>
+              <li class="nav-item" style="padding-right:2%;">
+                <a class="nav-link dashboard_text" style="background-color: #120c45;color: white;margin-right:9%;" href="help.html"><i class="fa fa-question" style='color: white !important;;margin-right: 5%;display: inline;' aria-hidden="true"></i>Help</a>
+              </li>
+              
+                </ul>
+              </li>
+            </ul>
+            <a class="ul-a-class2" style='text-decoration: none;margin-left: 15%;margin-right: 1%;display: inline;color: white;' href="#"><i class="fa fa-youtube" style='margin-right: 1%;margin-left:3%;display: inline;color: white;' aria-hidden="true"></i></a>
+            <a class="ul-a-class2" style='text-decoration: none;margin-right: 1%;display: inline;color: white;' href="#"><i class="fa fa-linkedin" style='margin-right: 1%;display: inline;color: white;' aria-hidden="true"></i></a>
+            <a class="ul-a-class2" style='text-decoration: none;margin-right: 1%;display: inline;color: white;' href="#"><i class="fa fa-google-plus" style='margin-right: 1%;display: inline;color: white;' aria-hidden="true"></i></a>
+            <a class="ul-a-class2" style='text-decoration: none;margin-right: 1%;display: inline;color: white;' href="#"><i class="fa fa-instagram" style='margin-right: 1%;display: inline;color: white;' aria-hidden="true"></i></a>
+            <a class="ul-a-class2" style='text-decoration: none;margin-right: 9%;display: inline;color: white;' href="#"><i class="fa fa-twitter" style='margin-right: 1%;display: inline;color: white;' aria-hidden="true"></i></a>
+            </div>
+        </div>
+      </nav>
+
+
+     <div id="div0" class="container" style="padding-top: 5%;">
+        <h6>Enter Admin Username & Password To View,Add & Delete Users</h6>
+        <div class="row g-3">
+            <div class="col-md-3">
+              <input id="inp_name" type="text" class="form-control" placeholder="Username" aria-label="First name">
+            </div>
+            <br>
+            <div class="col-md-3">
+              <input id="inp_pwd" type="text" class="form-control" placeholder="Password" aria-label="Last name">
+            </div>
+            <button class="btnHelp" style="margin-top: 1.5%;height:40px;width:200px;background-color: #120c45;color: white;" onclick='check_admin()'>LOGIN</button>
+      
+          </div>
+     </div>
+
+
+
+    
+
+
+      
+      <div id='div1' class="container" style="margin-top: 2%;display: none;">
+        <h4 style="text-align: center;">All Users</h4>
+        <table class="table table-bordered table-hover">
+            <thead style="background-color: #120c45;color:white">
+                <th style="text-align: center;">User#</th>
+                <th style="text-align: center;">Username</th>
+                <th style="text-align: center;">Password</th>
+                <th style="text-align: center;">Delete?</th>
+            </thead>
+            <tbody id='all_users'>
+            </tbody>
+        </table>
+    </div>
+  
+
+    
+        <div id="div2" class="container"style='margin-top:3%;display: none;'>
+          <form class="row g-3" action="" method="GET">
+        <div class="col-md-3">
+        <label class="form-label">User#</label>
+        <input type="number" id='user_id' class="form-control" id='Item_Name' required>
+        </div>
+        
+        <div class="col-md-3">
+        <label class="form-label">Username</label>
+        <input type="text" id='user_name' class="form-control" id='Item_Qty' required>
+        </div>
+        <div class="col-md-3">
+        <label class="form-label">Password</label>
+        <input type="text" id='user_password' class="form-control" id='Item_Price' required>
+        </div>
+        <button class="btnHelp" style="margin-top: 4%;height:40px;width:200px;background-color: #120c45;color: white;" onclick='add_user()'>ADD User</button>
+      
+      </div>
+      
+
+
+<!-- FOR NAVVBAR -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+<script src="app.js"></script>
+
+
+</body>
+</html>
+
+
